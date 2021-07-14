@@ -3,7 +3,7 @@
 
 This repository contains an ESP8266 firmware, which adds MQTT to the Ikea VINDRIKTNING PM2.5 air quality sensor.
 The modification  doesn't interfere with normal operation of the device in any way.
-The ESP8266 just adds another data sink besides the colored LEDs.
+The ESP8266 just adds another data sink beside the colored LEDs.
 
 ![half_assembled](./img/half-assembled.jpg)
 
