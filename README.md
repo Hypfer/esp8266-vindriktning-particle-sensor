@@ -61,6 +61,29 @@ Just build, flash, and you're done.
 
 When connecting everything up, you should see an open Wi-Fi Access Point to configure your Wi-Fi and MQTT credentials.
 
+## Low-Noise Mod
+
+As you might've noticed, there's a fan in there, which is audible even multiple meters away.
+
+It is also always present since for some reason, the Ikea uC firmware decides to toggle the fan on and off every minute 
+or so causing the noise it makes to change and therefore constantly stays noticeable.
+
+Good thing is that the Fan does spin up fine with just 3.3V, which means that we can run it constantly from the
+voltage regulator of the D1 Mini.
+
+At 3.3V its noise is barely noticeable from 50 cm away.
+
+![3.3v](./img/3.3v.jpg)
+
+Having the Fan not connected at all was also tried but proved to mess up all readings completely.
+
+
+This is of course a more invasive modification than just adding Wi-Fi data logging.
+Though, given that it is just a €10 device, I'm fine with that.
+
+To make soldering a bit easier, note that the whole outer metal part of the Micro USB connector of the D1 Mini is
+connected to GND.
+
 ## Misc
 
 The VINDRIKTNING consists of a custom(?) Cubic PM1006-like Sensor + another uC that does all that LED stuff, which talk
