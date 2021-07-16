@@ -65,8 +65,8 @@ When connecting everything up, you should see an open Wi-Fi Access Point to conf
 
 As you might've noticed, there's a fan in there, which is audible even multiple meters away.
 
-It is also always present since for some reason, the Ikea uC firmware decides to toggle the fan on and off every minute 
-or so causing the noise it makes to change and therefore constantly stays noticeable.
+For some reason, the Ikea uC firmware decides to toggle the fan on and off every minute 
+or so causing the noise it makes to change and therefore it constantly stays noticeable.
 
 Good thing is that the Fan does spin up fine with just 3.3V, which means that we can run it constantly from the
 voltage regulator of the D1 Mini.
