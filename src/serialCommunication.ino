@@ -1,5 +1,5 @@
 boolean parseState() {
-  unsigned long pm25 = serialRxBuf[3] * 256 ^ 3 + serialRxBuf[4] * 256 ^ 2 + serialRxBuf[5] * 256 ^ 1 + serialRxBuf[6];
+  unsigned long pm25 = serialRxBuf[5] * 256 + serialRxBuf[6];
 
   Serial.print("Received PM 2.5 reading: ");
   Serial.println(pm25);
