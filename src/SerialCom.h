@@ -24,6 +24,10 @@ namespace SerialCom {
 
     bool parseState(particleSensorState_t& state)
     {
+        /**
+         *         MSB  DF 3     DF 4  LSB
+         * uint16_t = xxxxxxxx xxxxxxxx
+         */
         uint16_t pm25 = (serialRxBuf[5] << 8) | serialRxBuf[6];
 
         Serial.printf("Received PM 2.5 reading: %d\n", pm25);
