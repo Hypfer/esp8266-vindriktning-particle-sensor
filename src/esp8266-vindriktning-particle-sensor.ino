@@ -64,10 +64,8 @@ void setup() {
     snprintf(MQTT_TOPIC_STATE, 127, "%s/%s/state", FIRMWARE_PREFIX, identifier);
     snprintf(MQTT_TOPIC_COMMAND, 127, "%s/%s/command", FIRMWARE_PREFIX, identifier);
 
-    snprintf(
-        MQTT_TOPIC_AUTOCONF_PM25_SENSOR, 127, "homeassistant/sensor/%s/%s_pm25/config", FIRMWARE_PREFIX, identifier);
-    snprintf(
-        MQTT_TOPIC_AUTOCONF_WIFI_SENSOR, 127, "homeassistant/sensor/%s/%s_wifi/config", FIRMWARE_PREFIX, identifier);
+    snprintf(MQTT_TOPIC_AUTOCONF_PM25_SENSOR, 127, "homeassistant/sensor/%s/%s_pm25/config", FIRMWARE_PREFIX, identifier);
+    snprintf(MQTT_TOPIC_AUTOCONF_WIFI_SENSOR, 127, "homeassistant/sensor/%s/%s_wifi/config", FIRMWARE_PREFIX, identifier);
 
     WiFi.hostname(identifier);
 
@@ -173,8 +171,7 @@ void resetWifiSettingsAndReboot() {
 
 void mqttReconnect() {
     for (uint8_t attempt = 0; attempt < 3; ++attempt) {
-        if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true,
-                AVAILABILITY_OFFLINE)) {
+        if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true, AVAILABILITY_OFFLINE)) {
             mqttClient.publish(MQTT_TOPIC_AVAILABILITY, AVAILABILITY_ONLINE, true);
             publishAutoConfig();
 
@@ -232,8 +229,7 @@ void publishAutoConfig() {
     autoconfPayload["unique_id"] = identifier + String("_wifi");
     autoconfPayload["unit_of_measurement"] = "dBm";
     autoconfPayload["json_attributes_topic"] = MQTT_TOPIC_STATE;
-    autoconfPayload["json_attributes_template"]
-        = "{\"ssid\": \"{{value_json.wifi.ssid}}\", \"ip\": \"{{value_json.wifi.ip}}\"}";
+    autoconfPayload["json_attributes_template"] = "{\"ssid\": \"{{value_json.wifi.ssid}}\", \"ip\": \"{{value_json.wifi.ip}}\"}";
     autoconfPayload["icon"] = "mdi:wifi";
 
     serializeJson(autoconfPayload, mqttPayload);
