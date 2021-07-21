@@ -22,11 +22,11 @@ WiFiManagerParameter custom_mqtt_server("server", "mqtt server", Config::mqtt_se
 WiFiManagerParameter custom_mqtt_user("user", "MQTT username", Config::username, sizeof(Config::username));
 WiFiManagerParameter custom_mqtt_pass("pass", "MQTT password", Config::password, sizeof(Config::password));
 
-unsigned long lastMqttConnectionAttempt = millis();
-const long mqttConnectionInterval = 60000;
+uint16_t lastMqttConnectionAttempt = millis();
+const uint16_t mqttConnectionInterval = 60000;
 
-unsigned long statusPublishPreviousMillis = millis();
-const long statusPublishInterval = 30000;
+uint16_t statusPublishPreviousMillis = millis();
+const uint16_t statusPublishInterval = 30000;
 
 char identifier[24];
 #define FIRMWARE_PREFIX "esp8266-vindriktning-particle-sensor"
@@ -48,7 +48,7 @@ void saveConfigCallback()
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
     SerialCom::setup();
 
     Serial.println("\n");
@@ -82,14 +82,11 @@ void setup()
     mqttClient.setBufferSize(2048);
     mqttClient.setCallback(mqttCallback);
 
-    Serial.print("Hostname: ");
-    Serial.println(identifier);
-    Serial.print("\nIP: ");
-    Serial.println(WiFi.localIP());
+    Serial.printf("Hostname: %s\n", identifier);
+    Serial.printf("IP: %s\n", WiFi.localIP());
 
     Serial.println("-- Current GPIO Configuration --");
-    Serial.print("PIN_UART_RX: ");
-    Serial.println(SerialCom::PIN_UART_RX);
+    Serial.printf("PIN_UART_RX: %d\n", SerialCom::PIN_UART_RX);
 
     mqttReconnect();
 }
@@ -104,15 +101,25 @@ void setupOTA()
     ArduinoOTA.onError([](ota_error_t error) {
         Serial.printf("Error[%u]: ", error);
         if (error == OTA_AUTH_ERROR)
+        {
             Serial.println("Auth Failed");
+        }
         else if (error == OTA_BEGIN_ERROR)
+        {
             Serial.println("Begin Failed");
+        }
         else if (error == OTA_CONNECT_ERROR)
+        {
             Serial.println("Connect Failed");
+        }
         else if (error == OTA_RECEIVE_ERROR)
+        {
             Serial.println("Receive Failed");
+        }
         else if (error == OTA_END_ERROR)
+        {
             Serial.println("End Failed");
+        }
     });
 
     ArduinoOTA.setHostname(identifier);
@@ -128,9 +135,10 @@ void loop()
     SerialCom::handleUart(state);
     mqttClient.loop();
 
-    if (statusPublishInterval <= (millis() - statusPublishPreviousMillis))
+    const uint32_t currentMillis = millis();
+    if (currentMillis - statusPublishPreviousMillis >= statusPublishInterval)
     {
-        statusPublishPreviousMillis = millis();
+        statusPublishPreviousMillis = currentMillis;
 
         if (state.avgPM25 > 0)
         {
@@ -138,9 +146,9 @@ void loop()
         }
     }
 
-    if (!mqttClient.connected() && (mqttConnectionInterval <= (millis() - lastMqttConnectionAttempt)))
+    if (!mqttClient.connected() && currentMillis - lastMqttConnectionAttempt >= mqttConnectionInterval)
     {
-        lastMqttConnectionAttempt = millis();
+        lastMqttConnectionAttempt = currentMillis;
         mqttReconnect();
     }
 }
@@ -184,7 +192,7 @@ void resetWifiSettingsAndReboot()
 
 void mqttReconnect()
 {
-    for (int attempt = 0; attempt < 3; ++attempt)
+    for (uint8_t attempt = 0; attempt < 3; ++attempt)
     {
         if (mqttClient.connect(
                 identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true, AVAILABILITY_OFFLINE))
@@ -203,7 +211,7 @@ void mqttReconnect()
     }
 }
 
-boolean isMqttConnected()
+bool isMqttConnected()
 {
     return mqttClient.connected();
 }
@@ -212,7 +220,7 @@ void publishState()
 {
     DynamicJsonDocument wifiJson(192);
     DynamicJsonDocument stateJson(604);
-    char payload[256];
+    uint8_t payload[256];
 
     wifiJson["ssid"] = WiFi.SSID();
     wifiJson["ip"] = WiFi.localIP().toString();
@@ -226,11 +234,11 @@ void publishState()
     mqttClient.publish(MQTT_TOPIC_STATE, payload, true);
 }
 
-void mqttCallback(char* topic, byte* payload, unsigned int length) { }
+void mqttCallback(char* topic, uint8_t* payload, unsigned int length) { }
 
 void publishAutoConfig()
 {
-    char mqttPayload[2048];
+    uint8_t mqttPayload[2048];
     DynamicJsonDocument device(256);
     DynamicJsonDocument autoconfPayload(1024);
     StaticJsonDocument<64> identifiersDoc;

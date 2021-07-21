@@ -23,12 +23,11 @@ namespace SerialCom
         rxBufIdx = 0;
     }
 
-    boolean parseState(particleSensorState_t& state)
+    bool parseState(particleSensorState_t& state)
     {
-        unsigned long pm25 = serialRxBuf[5] * 256 + serialRxBuf[6];
+        uint16_t pm25 = (serialRxBuf[5] << 8) | serialRxBuf[6];
 
-        Serial.print("Received PM 2.5 reading: ");
-        Serial.println(pm25);
+        Serial.printf("Received PM 2.5 reading: %d\n", pm25);
 
         if (pm25 > 0)
         {
@@ -38,14 +37,15 @@ namespace SerialCom
 
             if (state.measurementIdx == 0)
             {
-                unsigned long avgPM25 = 0;
-                boolean invalid = false;
+                uint16_t avgPM25 = 0;
+                bool invalid = false;
 
-                for (int i = 0; i < 5; i++)
+                for (uint8_t i = 0; i < 5; ++i)
                 {
                     if (state.measurements[i] == 0)
                     {
                         invalid = true;
+                        break;
                     }
                     else
                     {
@@ -57,8 +57,7 @@ namespace SerialCom
                 {
                     state.avgPM25 = avgPM25 / 5;
 
-                    Serial.print("New Avg PM25: ");
-                    Serial.println(state.avgPM25);
+                    Serial.printf("New Avg PM25: %d\n", state.avgPM25);
                 }
             }
         }
@@ -68,7 +67,6 @@ namespace SerialCom
 
     void handleUart(particleSensorState_t& state)
     {
-
         if (sensorSerial.available())
         {
             Serial.print("Receiving:");
@@ -95,21 +93,12 @@ namespace SerialCom
             Serial.println("Done.");
         }
 
-        if (serialRxBuf[0] == 0x16 && serialRxBuf[1] == 0x11 && serialRxBuf[2] == 0x0b)
+        if (serialRxBuf[0] == 0x16 && serialRxBuf[1] == 0x11 && serialRxBuf[2] == 0x0B)
         {
             parseState(state);
 
-            Serial.print("Current measurements: ");
-            Serial.print(state.measurements[0]);
-            Serial.print(", ");
-            Serial.print(state.measurements[1]);
-            Serial.print(", ");
-            Serial.print(state.measurements[2]);
-            Serial.print(", ");
-            Serial.print(state.measurements[3]);
-            Serial.print(", ");
-            Serial.print(state.measurements[4]);
-            Serial.print("\n");
+            Serial.printf("Current measurements: %d, %d, %d, %d, %d\n", state.measurements[0], state.measurements[1],
+                state.measurements[2], state.measurements[3], state.measurements[4]);
         }
         else
         {
