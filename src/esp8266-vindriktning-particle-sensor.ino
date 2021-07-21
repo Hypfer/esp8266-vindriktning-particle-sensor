@@ -22,10 +22,10 @@ WiFiManagerParameter custom_mqtt_server("server", "mqtt server", Config::mqtt_se
 WiFiManagerParameter custom_mqtt_user("user", "MQTT username", Config::username, sizeof(Config::username));
 WiFiManagerParameter custom_mqtt_pass("pass", "MQTT password", Config::password, sizeof(Config::password));
 
-uint16_t lastMqttConnectionAttempt = millis();
+uint32_t lastMqttConnectionAttempt = 0;
 const uint16_t mqttConnectionInterval = 60000;
 
-uint16_t statusPublishPreviousMillis = millis();
+uint32_t statusPublishPreviousMillis = 0;
 const uint16_t statusPublishInterval = 30000;
 
 char identifier[24];
@@ -100,24 +100,15 @@ void setupOTA()
     });
     ArduinoOTA.onError([](ota_error_t error) {
         Serial.printf("Error[%u]: ", error);
-        if (error == OTA_AUTH_ERROR)
-        {
+        if (error == OTA_AUTH_ERROR) {
             Serial.println("Auth Failed");
-        }
-        else if (error == OTA_BEGIN_ERROR)
-        {
+        } else if (error == OTA_BEGIN_ERROR) {
             Serial.println("Begin Failed");
-        }
-        else if (error == OTA_CONNECT_ERROR)
-        {
+        } else if (error == OTA_CONNECT_ERROR) {
             Serial.println("Connect Failed");
-        }
-        else if (error == OTA_RECEIVE_ERROR)
-        {
+        } else if (error == OTA_RECEIVE_ERROR) {
             Serial.println("Receive Failed");
-        }
-        else if (error == OTA_END_ERROR)
-        {
+        } else if (error == OTA_END_ERROR) {
             Serial.println("End Failed");
         }
     });
@@ -136,18 +127,15 @@ void loop()
     mqttClient.loop();
 
     const uint32_t currentMillis = millis();
-    if (currentMillis - statusPublishPreviousMillis >= statusPublishInterval)
-    {
+    if (currentMillis - statusPublishPreviousMillis >= statusPublishInterval) {
         statusPublishPreviousMillis = currentMillis;
 
-        if (state.avgPM25 > 0)
-        {
+        if (state.avgPM25 > 0) {
             publishState();
         }
     }
 
-    if (!mqttClient.connected() && currentMillis - lastMqttConnectionAttempt >= mqttConnectionInterval)
-    {
+    if (!mqttClient.connected() && currentMillis - lastMqttConnectionAttempt >= mqttConnectionInterval) {
         lastMqttConnectionAttempt = currentMillis;
         mqttReconnect();
     }
@@ -170,12 +158,9 @@ void setupWifi()
     strcpy(Config::username, custom_mqtt_user.getValue());
     strcpy(Config::password, custom_mqtt_pass.getValue());
 
-    if (shouldSaveConfig)
-    {
+    if (shouldSaveConfig) {
         Config::save();
-    }
-    else
-    {
+    } else {
         // For some reason, the read values get overwritten in this function
         // To combat this, we just reload the config
         // This is most likely a logic error which could be fixed otherwise
@@ -192,20 +177,16 @@ void resetWifiSettingsAndReboot()
 
 void mqttReconnect()
 {
-    for (uint8_t attempt = 0; attempt < 3; ++attempt)
-    {
-        if (mqttClient.connect(
-                identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true, AVAILABILITY_OFFLINE))
-        {
+    for (uint8_t attempt = 0; attempt < 3; ++attempt) {
+        if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true,
+                AVAILABILITY_OFFLINE)) {
             mqttClient.publish(MQTT_TOPIC_AVAILABILITY, AVAILABILITY_ONLINE, true);
             publishAutoConfig();
 
             // Make sure to subscribe after polling the status so that we never execute commands with the default data
             mqttClient.subscribe(MQTT_TOPIC_COMMAND);
             break;
-        }
-        else
-        {
+        } else {
             delay(5000);
         }
     }
