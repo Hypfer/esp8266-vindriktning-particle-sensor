@@ -32,33 +32,56 @@ namespace SerialCom {
 
         Serial.printf("Received PM 2.5 reading: %d\n", pm25);
 
-        if (pm25 > 0) {
-            state.measurements[state.measurementIdx] = pm25;
+        state.measurements[state.measurementIdx] = pm25;
 
-            state.measurementIdx = (state.measurementIdx + 1) % 5;
+        state.measurementIdx = (state.measurementIdx + 1) % 5;
 
-            if (state.measurementIdx == 0) {
-                float avgPM25 = 0.0f;
-                bool valid = true;
+        if (state.measurementIdx == 0) {
+            float avgPM25 = 0.0f;
+            bool valid = true;
 
-                for (uint8_t i = 0; i < 5; ++i) {
-                    if (state.measurements[i] == 0) {
-                        valid = false;
-                        break;
-                    } else {
-                        avgPM25 += state.measurements[i] / 5.0f;
-                    }
+            for (uint8_t i = 0; i < 5; ++i) {
+                if (state.measurements[i] == 0) {
+                    valid = false;
+                    break;
+                } else {
+                    avgPM25 += state.measurements[i] / 5.0f;
                 }
+            }
 
-                if (valid) {
-                    state.avgPM25 = avgPM25;
+            if (valid) {
+                state.avgPM25 = avgPM25;
 
-                    Serial.printf("New Avg PM25: %d\n", state.avgPM25);
-                }
+                Serial.printf("New Avg PM25: %d\n", state.avgPM25);
             }
         }
 
+
         clearRxBuf();
+    }
+
+    bool isValidHeader() {
+        bool headerValid = serialRxBuf[0] == 0x16 && serialRxBuf[1] == 0x11 && serialRxBuf[2] == 0x0B;
+
+        if (!headerValid) {
+            Serial.println("Received message with invalid header.");
+        }
+
+        return headerValid;
+    }
+
+    bool isValidChecksum() {
+        uint8_t checksum = 0;
+
+        for (uint8_t i = 0; i < 20; i++) {
+            checksum += serialRxBuf[i];
+        }
+
+        if (checksum != 0) {
+            Serial.printf("Received message with invalid checksum. Expected: 0. Actual: %d\n", checksum);
+        }
+
+        return checksum == 0;
     }
 
     void handleUart(particleSensorState_t& state) {
@@ -80,16 +103,16 @@ namespace SerialCom {
         }
         Serial.println("Done.");
 
-        if (serialRxBuf[0] == 0x16 && serialRxBuf[1] == 0x11 && serialRxBuf[2] == 0x0B) {
+        if (isValidHeader() && isValidChecksum()) {
             parseState(state);
 
             Serial.printf(
-                "Current measurements: %d, %d, %d, %d, %d",
+                "Current measurements: %d, %d, %d, %d, %d\n",
 
-                state.measurements[0], 
+                state.measurements[0],
                 state.measurements[1],
-                state.measurements[2], 
-                state.measurements[3], 
+                state.measurements[2],
+                state.measurements[3],
                 state.measurements[4]
             );
         } else {

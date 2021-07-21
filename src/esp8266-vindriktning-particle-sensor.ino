@@ -219,7 +219,7 @@ void publishAutoConfig() {
     device["manufacturer"] = "Ikea";
     device["model"] = "VINDRIKTNING";
     device["name"] = identifier;
-    device["sw_version"] = "2021.07.1";
+    device["sw_version"] = "2021.07.2";
 
     autoconfPayload["device"] = device.as<JsonObject>();
     autoconfPayload["availability_topic"] = MQTT_TOPIC_AVAILABILITY;
