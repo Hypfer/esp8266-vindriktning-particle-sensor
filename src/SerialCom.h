@@ -22,13 +22,13 @@ namespace SerialCom {
         rxBufIdx = 0;
     }
 
-    bool parseState(particleSensorState_t& state)
+    void parseState(particleSensorState_t& state)
     {
         /**
          *         MSB  DF 3     DF 4  LSB
          * uint16_t = xxxxxxxx xxxxxxxx
          */
-        uint16_t pm25 = (serialRxBuf[5] << 8) | serialRxBuf[6];
+        const uint16_t pm25 = (serialRxBuf[5] << 8) | serialRxBuf[6];
 
         Serial.printf("Received PM 2.5 reading: %d\n", pm25);
 
@@ -38,20 +38,20 @@ namespace SerialCom {
             state.measurementIdx = (state.measurementIdx + 1) % 5;
 
             if (state.measurementIdx == 0) {
-                uint16_t avgPM25 = 0;
-                bool invalid = false;
+                float avgPM25 = 0.0f;
+                bool valid = true;
 
                 for (uint8_t i = 0; i < 5; ++i) {
                     if (state.measurements[i] == 0) {
-                        invalid = true;
+                        valid = false;
                         break;
                     } else {
-                        avgPM25 += state.measurements[i];
+                        avgPM25 += state.measurements[i] / 5.0f;
                     }
                 }
 
-                if (invalid == false) {
-                    state.avgPM25 = avgPM25 / 5;
+                if (valid) {
+                    state.avgPM25 = avgPM25;
 
                     Serial.printf("New Avg PM25: %d\n", state.avgPM25);
                 }
@@ -63,12 +63,11 @@ namespace SerialCom {
 
     void handleUart(particleSensorState_t& state)
     {
-        if (sensorSerial.available()) {
-            Serial.print("Receiving:");
+        if (!sensorSerial.available()) {
+            return;
         }
 
-        int prevIdx = rxBufIdx;
-
+        Serial.print("Receiving:");
         while (sensorSerial.available()) {
             serialRxBuf[rxBufIdx++] = sensorSerial.read();
             Serial.print(".");
@@ -80,16 +79,17 @@ namespace SerialCom {
                 clearRxBuf();
             }
         }
-
-        if (prevIdx != rxBufIdx) {
-            Serial.println("Done.");
-        }
+        Serial.println("Done.");
 
         if (serialRxBuf[0] == 0x16 && serialRxBuf[1] == 0x11 && serialRxBuf[2] == 0x0B) {
             parseState(state);
 
-            Serial.printf("Current measurements: %d, %d, %d, %d, %d\n", state.measurements[0], state.measurements[1],
-                state.measurements[2], state.measurements[3], state.measurements[4]);
+            Serial.printf("Current measurements:");
+            Serial.printf(" %d", state.measurements[0]);
+            Serial.printf(", %d", state.measurements[1]);
+            Serial.printf(", %d", state.measurements[2]);
+            Serial.printf(", %d", state.measurements[3]);
+            Serial.printf(", %d\n", state.measurements[4]);
         } else {
             clearRxBuf();
         }

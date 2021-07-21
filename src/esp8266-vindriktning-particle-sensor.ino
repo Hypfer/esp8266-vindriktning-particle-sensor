@@ -23,10 +23,10 @@ WiFiManagerParameter custom_mqtt_user("user", "MQTT username", Config::username,
 WiFiManagerParameter custom_mqtt_pass("pass", "MQTT password", Config::password, sizeof(Config::password));
 
 uint32_t lastMqttConnectionAttempt = 0;
-const uint16_t mqttConnectionInterval = 60000;
+const uint16_t mqttConnectionInterval = 60000; // 1 minute = 60 seconds = 60000 milliseconds
 
 uint32_t statusPublishPreviousMillis = 0;
-const uint16_t statusPublishInterval = 30000;
+const uint16_t statusPublishInterval = 30000; // 30 seconds = 30000 milliseconds
 
 char identifier[24];
 #define FIRMWARE_PREFIX "esp8266-vindriktning-particle-sensor"
@@ -83,7 +83,7 @@ void setup()
     mqttClient.setCallback(mqttCallback);
 
     Serial.printf("Hostname: %s\n", identifier);
-    Serial.printf("IP: %s\n", WiFi.localIP());
+    Serial.printf("IP: %s\n", WiFi.localIP().toString().c_str());
 
     Serial.println("-- Current GPIO Configuration --");
     Serial.printf("PIN_UART_RX: %d\n", SerialCom::PIN_UART_RX);
@@ -131,12 +131,14 @@ void loop()
         statusPublishPreviousMillis = currentMillis;
 
         if (state.avgPM25 > 0) {
+            printf("Publish state\n");
             publishState();
         }
     }
 
     if (!mqttClient.connected() && currentMillis - lastMqttConnectionAttempt >= mqttConnectionInterval) {
         lastMqttConnectionAttempt = currentMillis;
+        printf("Reconnect mqtt\n");
         mqttReconnect();
     }
 }
@@ -186,9 +188,8 @@ void mqttReconnect()
             // Make sure to subscribe after polling the status so that we never execute commands with the default data
             mqttClient.subscribe(MQTT_TOPIC_COMMAND);
             break;
-        } else {
-            delay(5000);
         }
+        delay(5000);
     }
 }
 
@@ -201,7 +202,7 @@ void publishState()
 {
     DynamicJsonDocument wifiJson(192);
     DynamicJsonDocument stateJson(604);
-    uint8_t payload[256];
+    char payload[256];
 
     wifiJson["ssid"] = WiFi.SSID();
     wifiJson["ip"] = WiFi.localIP().toString();
@@ -212,14 +213,14 @@ void publishState()
     stateJson["wifi"] = wifiJson.as<JsonObject>();
 
     serializeJson(stateJson, payload);
-    mqttClient.publish(MQTT_TOPIC_STATE, payload, true);
+    mqttClient.publish(&MQTT_TOPIC_STATE[0], &payload[0], true);
 }
 
 void mqttCallback(char* topic, uint8_t* payload, unsigned int length) { }
 
 void publishAutoConfig()
 {
-    uint8_t mqttPayload[2048];
+    char mqttPayload[2048];
     DynamicJsonDocument device(256);
     DynamicJsonDocument autoconfPayload(1024);
     StaticJsonDocument<64> identifiersDoc;
@@ -246,7 +247,7 @@ void publishAutoConfig()
     autoconfPayload["icon"] = "mdi:wifi";
 
     serializeJson(autoconfPayload, mqttPayload);
-    mqttClient.publish(MQTT_TOPIC_AUTOCONF_WIFI_SENSOR, mqttPayload, true);
+    mqttClient.publish(&MQTT_TOPIC_AUTOCONF_WIFI_SENSOR[0], &mqttPayload[0], true);
 
     autoconfPayload.clear();
 
@@ -260,7 +261,7 @@ void publishAutoConfig()
     autoconfPayload["icon"] = "mdi:air-filter";
 
     serializeJson(autoconfPayload, mqttPayload);
-    mqttClient.publish(MQTT_TOPIC_AUTOCONF_PM25_SENSOR, mqttPayload, true);
+    mqttClient.publish(&MQTT_TOPIC_AUTOCONF_PM25_SENSOR[0], &mqttPayload[0], true);
 
     autoconfPayload.clear();
 }
