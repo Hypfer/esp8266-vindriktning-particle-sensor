@@ -13,7 +13,9 @@ namespace SerialCom {
     uint8_t serialRxBuf[255];
     uint8_t rxBufIdx = 0;
 
-    void setup() { sensorSerial.begin(9600); }
+    void setup() {
+        sensorSerial.begin(9600);
+    }
 
     void clearRxBuf() {
         // Clear everything for the next message
@@ -81,12 +83,15 @@ namespace SerialCom {
         if (serialRxBuf[0] == 0x16 && serialRxBuf[1] == 0x11 && serialRxBuf[2] == 0x0B) {
             parseState(state);
 
-            Serial.printf("Current measurements: %d, %d, %d, %d, %d", 
+            Serial.printf(
+                "Current measurements: %d, %d, %d, %d, %d",
+
                 state.measurements[0], 
                 state.measurements[1],
                 state.measurements[2], 
                 state.measurements[3], 
-                state.measurements[4]);
+                state.measurements[4]
+            );
         } else {
             clearRxBuf();
         }
