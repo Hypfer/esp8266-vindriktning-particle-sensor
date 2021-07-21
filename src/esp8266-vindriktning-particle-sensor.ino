@@ -41,13 +41,11 @@ char MQTT_TOPIC_AUTOCONF_PM25_SENSOR[128];
 
 bool shouldSaveConfig = false;
 
-void saveConfigCallback()
-{
+void saveConfigCallback() {
     shouldSaveConfig = true;
 }
 
-void setup()
-{
+void setup() {
     Serial.begin(115200);
     SerialCom::setup();
 
@@ -91,8 +89,7 @@ void setup()
     mqttReconnect();
 }
 
-void setupOTA()
-{
+void setupOTA() {
     ArduinoOTA.onStart([]() { Serial.println("Start"); });
     ArduinoOTA.onEnd([]() { Serial.println("\nEnd"); });
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
@@ -120,8 +117,7 @@ void setupOTA()
     ArduinoOTA.begin();
 }
 
-void loop()
-{
+void loop() {
     ArduinoOTA.handle();
     SerialCom::handleUart(state);
     mqttClient.loop();
@@ -143,8 +139,7 @@ void loop()
     }
 }
 
-void setupWifi()
-{
+void setupWifi() {
     wifiManager.setDebugOutput(false);
     wifiManager.setSaveConfigCallback(saveConfigCallback);
 
@@ -170,15 +165,13 @@ void setupWifi()
     }
 }
 
-void resetWifiSettingsAndReboot()
-{
+void resetWifiSettingsAndReboot() {
     wifiManager.resetSettings();
     delay(3000);
     ESP.restart();
 }
 
-void mqttReconnect()
-{
+void mqttReconnect() {
     for (uint8_t attempt = 0; attempt < 3; ++attempt) {
         if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true,
                 AVAILABILITY_OFFLINE)) {
@@ -193,13 +186,11 @@ void mqttReconnect()
     }
 }
 
-bool isMqttConnected()
-{
+bool isMqttConnected() {
     return mqttClient.connected();
 }
 
-void publishState()
-{
+void publishState() {
     DynamicJsonDocument wifiJson(192);
     DynamicJsonDocument stateJson(604);
     char payload[256];
@@ -218,8 +209,7 @@ void publishState()
 
 void mqttCallback(char* topic, uint8_t* payload, unsigned int length) { }
 
-void publishAutoConfig()
-{
+void publishAutoConfig() {
     char mqttPayload[2048];
     DynamicJsonDocument device(256);
     DynamicJsonDocument autoconfPayload(1024);

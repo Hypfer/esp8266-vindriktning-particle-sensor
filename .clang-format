@@ -12,6 +12,21 @@ PointerAlignment: Left
 AccessModifierOffset: -4
 AllowShortFunctionsOnASingleLine: Inline
 AlwaysBreakTemplateDeclarations: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterClass: false
+    AfterControlStatement: false
+    AfterEnum: false
+    AfterFunction: false
+    AfterNamespace: false
+    AfterStruct: false
+    AfterUnion: false
+    AfterExternBlock: false
+    BeforeCatch: false
+    BeforeElse: false
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+    SplitEmptyNamespace: false
 BreakConstructorInitializers: BeforeColon
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true

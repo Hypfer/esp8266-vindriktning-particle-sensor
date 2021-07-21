@@ -15,15 +15,13 @@ namespace SerialCom {
 
     void setup() { sensorSerial.begin(9600); }
 
-    void clearRxBuf()
-    {
+    void clearRxBuf() {
         // Clear everything for the next message
         memset(serialRxBuf, 0, sizeof(serialRxBuf));
         rxBufIdx = 0;
     }
 
-    void parseState(particleSensorState_t& state)
-    {
+    void parseState(particleSensorState_t& state) {
         /**
          *         MSB  DF 3     DF 4  LSB
          * uint16_t = xxxxxxxx xxxxxxxx
@@ -61,8 +59,7 @@ namespace SerialCom {
         clearRxBuf();
     }
 
-    void handleUart(particleSensorState_t& state)
-    {
+    void handleUart(particleSensorState_t& state) {
         if (!sensorSerial.available()) {
             return;
         }
@@ -84,12 +81,12 @@ namespace SerialCom {
         if (serialRxBuf[0] == 0x16 && serialRxBuf[1] == 0x11 && serialRxBuf[2] == 0x0B) {
             parseState(state);
 
-            Serial.printf("Current measurements:");
-            Serial.printf(" %d", state.measurements[0]);
-            Serial.printf(", %d", state.measurements[1]);
-            Serial.printf(", %d", state.measurements[2]);
-            Serial.printf(", %d", state.measurements[3]);
-            Serial.printf(", %d\n", state.measurements[4]);
+            Serial.printf("Current measurements: %d, %d, %d, %d, %d", 
+                state.measurements[0], 
+                state.measurements[1],
+                state.measurements[2], 
+                state.measurements[3], 
+                state.measurements[4]);
         } else {
             clearRxBuf();
         }

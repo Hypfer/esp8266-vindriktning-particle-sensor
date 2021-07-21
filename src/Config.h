@@ -9,8 +9,7 @@ namespace Config {
     char username[24] = "";
     char password[24] = "";
 
-    void save()
-    {
+    void save() {
         DynamicJsonDocument json(512);
         json["mqtt_server"] = mqtt_server;
         json["username"] = username;
@@ -25,8 +24,7 @@ namespace Config {
         configFile.close();
     }
 
-    void load()
-    {
+    void load() {
         if (SPIFFS.begin()) {
 
             if (SPIFFS.exists("/config.json")) {
