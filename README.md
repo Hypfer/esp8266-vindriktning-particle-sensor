@@ -92,6 +92,8 @@ via UART. The uC simply regularly polls the sensor and displays the results.
 Therefore, to add Wi-Fi connectivity, we just need to also listen to the TX of the Sensor and decode those messages.
 The Ikea uC will do all that polling stuff for us.
 
+As reported in #16, the transitions from Green to Yellow and Yellow to Red in the Ikea firmware are at around 30 and 100μg/m³.
+
 ## ToDo
 
 Reconfiguration of a provisioned device without having to OTAU a firmware that clears the settings would be nice.

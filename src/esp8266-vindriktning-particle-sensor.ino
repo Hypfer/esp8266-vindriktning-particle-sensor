@@ -124,7 +124,7 @@ void loop() {
     if (currentMillis - statusPublishPreviousMillis >= statusPublishInterval) {
         statusPublishPreviousMillis = currentMillis;
 
-        if (state.avgPM25 > 0) {
+        if (state.valid) {
             printf("Publish state\n");
             publishState();
         }
@@ -219,7 +219,7 @@ void publishAutoConfig() {
     device["manufacturer"] = "Ikea";
     device["model"] = "VINDRIKTNING";
     device["name"] = identifier;
-    device["sw_version"] = "2021.07.2";
+    device["sw_version"] = "2021.08.0";
 
     autoconfPayload["device"] = device.as<JsonObject>();
     autoconfPayload["availability_topic"] = MQTT_TOPIC_AVAILABILITY;
