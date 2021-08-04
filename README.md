@@ -63,6 +63,8 @@ When connecting everything up, you should see an open Wi-Fi Access Point to conf
 
 ## Low-Noise Mod
 
+**Note:** The intent of this section is only to document that this is possible. I don't "recommend" doing this nor do I advise against it. 
+
 As you might've noticed, there's a fan in there, which is audible even multiple meters away.
 
 For some reason, the Ikea uC firmware decides to toggle the fan on and off every minute 
