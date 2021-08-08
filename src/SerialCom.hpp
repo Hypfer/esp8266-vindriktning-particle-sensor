@@ -2,7 +2,7 @@
 
 #include <SoftwareSerial.h>
 
-#include "Types.h"
+#include "Types.hpp"
 
 namespace SerialCom {
     constexpr static const uint8_t PIN_UART_RX = 4; // D2 on Wemos D1 Mini

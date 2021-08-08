@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
 #include <DNSServer.h>
@@ -6,9 +7,9 @@
 #include <PubSubClient.h>
 #include <WiFiManager.h>
 
-#include "Config.h"
-#include "SerialCom.h"
-#include "Types.h"
+#include "Config.hpp"
+#include "SerialCom.hpp"
+#include "Types.hpp"
 
 particleSensorState_t state;
 
@@ -40,11 +41,15 @@ char MQTT_TOPIC_AUTOCONF_WIFI_SENSOR[128];
 char MQTT_TOPIC_AUTOCONF_PM25_SENSOR[128];
 
 bool shouldSaveConfig = false;
-
+void setupWifi();
+void setupOTA();
+void mqttReconnect();
+void publishState();
+void publishAutoConfig();
 void saveConfigCallback() {
     shouldSaveConfig = true;
 }
-
+void mqttCallback(char* topic, uint8_t* payload, unsigned int length) { }
 void setup() {
     Serial.begin(115200);
     SerialCom::setup();
@@ -204,7 +209,7 @@ void publishState() {
     mqttClient.publish(&MQTT_TOPIC_STATE[0], &payload[0], true);
 }
 
-void mqttCallback(char* topic, uint8_t* payload, unsigned int length) { }
+
 
 void publishAutoConfig() {
     char mqttPayload[2048];
