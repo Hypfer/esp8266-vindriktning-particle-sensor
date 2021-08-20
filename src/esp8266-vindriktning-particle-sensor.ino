@@ -18,9 +18,12 @@ WiFiManager wifiManager;
 WiFiClient wifiClient;
 PubSubClient mqttClient;
 
+WiFiManagerParameter p_lineBreak_text_title("<p>MQTT Server Config:</p>");
 WiFiManagerParameter custom_mqtt_server("server", "mqtt server", Config::mqtt_server, sizeof(Config::mqtt_server));
 WiFiManagerParameter custom_mqtt_user("user", "MQTT username", Config::username, sizeof(Config::username));
 WiFiManagerParameter custom_mqtt_pass("pass", "MQTT password", Config::password, sizeof(Config::password));
+WiFiManagerParameter p_lineBreak_text_mqtt_anonymous("<p>MQTT Anonymous? (bypass user/pass):</p>");
+WiFiManagerParameter custom_mqtt_anonymous("mqtt_anónymous", "MQTT anonymous", "T", 2, "type=\"checkbox\""); 
 
 uint32_t lastMqttConnectionAttempt = 0;
 const uint16_t mqttConnectionInterval = 60000; // 1 minute = 60 seconds = 60000 milliseconds
@@ -141,9 +144,12 @@ void setupWifi() {
     wifiManager.setDebugOutput(false);
     wifiManager.setSaveConfigCallback(saveConfigCallback);
 
+    wifiManager.addParameter(&p_lineBreak_text_title);
     wifiManager.addParameter(&custom_mqtt_server);
     wifiManager.addParameter(&custom_mqtt_user);
     wifiManager.addParameter(&custom_mqtt_pass);
+    wifiManager.addParameter(&p_lineBreak_text_mqtt_anonymous);
+    wifiManager.addParameter(&custom_mqtt_anonymous);
 
     WiFi.hostname(identifier);
     wifiManager.autoConnect(identifier);
@@ -152,6 +158,7 @@ void setupWifi() {
     strcpy(Config::mqtt_server, custom_mqtt_server.getValue());
     strcpy(Config::username, custom_mqtt_user.getValue());
     strcpy(Config::password, custom_mqtt_pass.getValue());
+    strcpy(Config::mqtt_anonymous, custom_mqtt_anonymous.getValue());
 
     if (shouldSaveConfig) {
         Config::save();
@@ -171,13 +178,24 @@ void resetWifiSettingsAndReboot() {
 
 void mqttReconnect() {
     for (uint8_t attempt = 0; attempt < 3; ++attempt) {
-        if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true, AVAILABILITY_OFFLINE)) {
+        if (strcmp(Config::mqtt_anonymous, "T") == 0) {
+          if (mqttClient.connect(identifier, MQTT_TOPIC_AVAILABILITY, 1, true, AVAILABILITY_OFFLINE)) {
             mqttClient.publish(MQTT_TOPIC_AVAILABILITY, AVAILABILITY_ONLINE, true);
             publishAutoConfig();
 
             // Make sure to subscribe after polling the status so that we never execute commands with the default data
             mqttClient.subscribe(MQTT_TOPIC_COMMAND);
             break;
+      	  }
+        } else{
+          if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true, AVAILABILITY_OFFLINE)) {
+              mqttClient.publish(MQTT_TOPIC_AVAILABILITY, AVAILABILITY_ONLINE, true);
+              publishAutoConfig();
+
+              // Make sure to subscribe after polling the status so that we never execute commands with the default data
+              mqttClient.subscribe(MQTT_TOPIC_COMMAND);
+              break;
+          }
         }
         delay(5000);
     }

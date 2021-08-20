@@ -95,6 +95,14 @@ Therefore, to add Wi-Fi connectivity, we just need to also listen to the TX of t
 The Ikea uC will do all that polling stuff for us.
 
 As reported in #16, the transitions from Green to Yellow and Yellow to Red in the Ikea firmware are at around 30 and 100μg/m³.
+| Color        | Value           | Comment  |
+|:------------- |:-------------:|:-----|
+| Green      | 0-35 | Good + Low |
+| Amber      | 36-85 | Ok + Medium |
+| Red      | 86- | Not good + High |
+| Pulsing      | --- | Startup mode for 10 seconds|
+
+Info from (https://www.ikea.com/us/en/manuals/vindriktning-air-quality-sensor__AA-2289325-1_pub.pdf):
 
 ## ToDo
 
