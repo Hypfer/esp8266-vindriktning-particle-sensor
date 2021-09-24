@@ -85,12 +85,11 @@ namespace SerialCom {
         long now = millis();
         long lastMsg = now; 
         // wait for data with a timeout. 
-        while (now - lastMsg < 15)
+        while (millis() - lastMsg < 15)
         {
             if (sensorSerial->available())
             {
-                now = millis(); // re-init the timeout timer 
-                lastMsg = now; // since we received new data.
+                lastMsg = millis(); // re-init the timeout timer since we received new data.
 
                 serialRxBuf[rxBufIdx++] = sensorSerial->read();
                 Serial.print(".");
