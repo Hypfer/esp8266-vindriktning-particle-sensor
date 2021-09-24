@@ -82,15 +82,22 @@ namespace SerialCom {
         }
 
         Serial.print("Receiving:");
-        while (sensorSerial.available()) {
-            serialRxBuf[rxBufIdx++] = sensorSerial.read();
-            Serial.print(".");
+        long now = millis();
+        long lastMsg = now; 
+        // wait for data with a timeout. 
+        while (millis() - lastMsg < 15)
+        {
+            if (sensorSerial->available())
+            {
+                lastMsg = millis(); // re-init the timeout timer since we received new data.
 
-            // Without this delay, receiving data breaks for reasons that are beyond me
-            delay(15);
+                serialRxBuf[rxBufIdx++] = sensorSerial->read();
+                Serial.print(".");
 
-            if (rxBufIdx >= 64) {
-                clearRxBuf();
+                if (rxBufIdx >= 64)
+                {
+                    clearRxBuf();
+                }
             }
         }
         Serial.println("Done.");
