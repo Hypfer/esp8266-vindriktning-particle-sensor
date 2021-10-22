@@ -119,6 +119,7 @@ void loop() {
     ArduinoOTA.handle();
     SerialCom::handleUart(state);
     mqttClient.loop();
+    wifiManager.process();
 
     const uint32_t currentMillis = millis();
     if (currentMillis - statusPublishPreviousMillis >= statusPublishInterval) {
@@ -161,6 +162,8 @@ void setupWifi() {
         // This is most likely a logic error which could be fixed otherwise
         Config::load();
     }
+    
+    wifiManager.startWebPortal();
 }
 
 void resetWifiSettingsAndReboot() {
