@@ -157,6 +157,8 @@ void setupWifi() {
 
     if (shouldSaveConfig) {
         Config::save();
+        //reset save flag
+        shouldSaveConfig = false;
     } else {
         // For some reason, the read values get overwritten in this function
         // To combat this, we just reload the config
@@ -177,7 +179,7 @@ void mqttReconnect() {
     for (uint8_t attempt = 0; attempt < 3; ++attempt) {
         if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true, AVAILABILITY_OFFLINE)) {
             mqttClient.publish(MQTT_TOPIC_AVAILABILITY, AVAILABILITY_ONLINE, true);
-            publishAutoConfig();
+            //publishAutoConfig();
 
             // Make sure to subscribe after polling the status so that we never execute commands with the default data
             //mqttClient.subscribe(MQTT_TOPIC_COMMAND);
@@ -210,7 +212,7 @@ void publishState() {
 
 void mqttCallback(char* topic, uint8_t* payload, unsigned int length) { }
 
-void publishAutoConfig() {
+/*void publishAutoConfig() {
     char mqttPayload[2048];
     DynamicJsonDocument device(256);
     DynamicJsonDocument autoconfPayload(1024);
@@ -254,4 +256,4 @@ void publishAutoConfig() {
     mqttClient.publish(&MQTT_TOPIC_AUTOCONF_PM25_SENSOR[0], &mqttPayload[0], true);
 
     autoconfPayload.clear();
-}
+}*/
