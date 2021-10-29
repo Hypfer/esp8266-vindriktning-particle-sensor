@@ -14,14 +14,20 @@ namespace Config {
 
 
     void save() {
+        Serial.println("save config\n");
         DynamicJsonDocument json(JSON_SIZE);
         json["mqtt_server"] = mqtt_server;
         json["mqtt_topic"] = mqtt_topic;
         json["username"] = username;
         json["password"] = password;
+
+        Serial.println("== Save == \n");
+        Serial.printf("mqtt_server: %s\n", mqtt_server);
+        Serial.printf("mqtt_topic: %s\n", mqtt_topic);
+        Serial.printf("mqtt_user: %s\n", username);
       
 
-        File configFile = SPIFFS.open("/config.json", "w");
+        File configFile = SPIFFS.open("/conf.json", "w");
         if (!configFile) {
             return;
         }
@@ -31,10 +37,13 @@ namespace Config {
     }
 
     void load() {
+        Serial.println("load config\n");
         if (SPIFFS.begin()) {
-
             if (SPIFFS.exists("/config.json")) {
-                File configFile = SPIFFS.open("/config.json", "r");
+              SPIFFS.remove("/config.json");
+            }
+            if (SPIFFS.exists("/conf.json")) {
+                File configFile = SPIFFS.open("/conf.json", "r");
 
                 if (configFile) {
                     const size_t size = configFile.size();
@@ -48,6 +57,10 @@ namespace Config {
                         strcpy(mqtt_topic, json["mqtt_topic"]);
                         strcpy(username, json["username"]);
                         strcpy(password, json["password"]);
+                        Serial.println("== Load == \n");
+                        Serial.printf("mqtt_server: %s\n", mqtt_server);
+                        Serial.printf("mqtt_topic: %s\n", mqtt_topic);
+                        Serial.printf("mqtt_user: %s\n", username);
                     }
                 }
             }
