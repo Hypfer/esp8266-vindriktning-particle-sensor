@@ -7,7 +7,7 @@ namespace Config {
     char mqtt_server[80] = "example.tld";
 
     char username[24] = "";
-    char password[24] = "";
+    char password[72] = "";
 
     void save() {
         DynamicJsonDocument json(512);
