@@ -34,7 +34,7 @@ char identifier[24];
 #define AVAILABILITY_OFFLINE "offline"
 char MQTT_TOPIC_AVAILABILITY[128];
 char MQTT_TOPIC_STATE[128];
-char MQTT_TOPIC_COMMAND[128];
+//char MQTT_TOPIC_COMMAND[128];
 
 char MQTT_TOPIC_AUTOCONF_WIFI_SENSOR[128];
 char MQTT_TOPIC_AUTOCONF_PM25_SENSOR[128];
@@ -62,7 +62,7 @@ void setup() {
     snprintf(identifier, sizeof(identifier), "VINDRIKTNING-%X", ESP.getChipId());
     snprintf(MQTT_TOPIC_AVAILABILITY, 127, "%s/%s/status", FIRMWARE_PREFIX, identifier);
     snprintf(MQTT_TOPIC_STATE, 127, "%s/%s/state", FIRMWARE_PREFIX, identifier);
-    snprintf(MQTT_TOPIC_COMMAND, 127, "%s/%s/command", FIRMWARE_PREFIX, identifier);
+    //snprintf(MQTT_TOPIC_COMMAND, 127, "%s/%s/command", FIRMWARE_PREFIX, identifier);
 
     snprintf(MQTT_TOPIC_AUTOCONF_PM25_SENSOR, 127, "homeassistant/sensor/%s/%s_pm25/config", FIRMWARE_PREFIX, identifier);
     snprintf(MQTT_TOPIC_AUTOCONF_WIFI_SENSOR, 127, "homeassistant/sensor/%s/%s_wifi/config", FIRMWARE_PREFIX, identifier);
@@ -179,7 +179,7 @@ void mqttReconnect() {
             publishAutoConfig();
 
             // Make sure to subscribe after polling the status so that we never execute commands with the default data
-            mqttClient.subscribe(MQTT_TOPIC_COMMAND);
+            //mqttClient.subscribe(MQTT_TOPIC_COMMAND);
             break;
         }
         delay(5000);
