@@ -74,6 +74,7 @@ void setup() {
     setupOTA();
 
     snprintf(MQTT_TOPIC_STATE, 127, Config::mqtt_topic, identifier);
+    Serial.printf("MQTT server: %s\n", Config::mqtt_server);
     Serial.printf("MQTT Topic State: %s\n", MQTT_TOPIC_STATE);
     
     mqttClient.setServer(Config::mqtt_server, 1883);
@@ -135,7 +136,6 @@ void loop() {
       Serial.printf("MQTT Topic State: %s\n", MQTT_TOPIC_STATE);
       //reset save flag
       shouldSaveConfig = false;
-      
  
     }
 
