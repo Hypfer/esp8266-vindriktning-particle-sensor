@@ -39,11 +39,6 @@ jobs:
         pio lib install /tmp/WiFiManager.zip
         pio lib install 1
     
-    - name: Run PlatformIO Check
-      run: pio check
-      env:
-        PLATFORMIO_CI_SRC: ${{ matrix.example }}
-
     - name: Run PlatformIO
       run: pio run
       env:
