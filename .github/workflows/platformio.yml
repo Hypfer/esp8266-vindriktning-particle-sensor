@@ -38,8 +38,12 @@ jobs:
         wget https://github.com/tzapu/WiFiManager/archive/refs/tags/2.0.5-beta.zip -O /tmp/WiFiManager.zip
         pio lib install /tmp/WiFiManager.zip
         pio lib install 1
-    
+   
     - name: Run PlatformIO
       run: pio run
       env:
-        PLATFORMIO_CI_SRC: ${{ matrix.example }}        
+        PLATFORMIO_CI_SRC: ${{ matrix.example }}
+    - name: Run Static Code Checks PlatformIO
+      run: pio check
+      env:
+        PLATFORMIO_CI_SRC: ${{ matrix.example }}
