@@ -37,4 +37,4 @@ jobs:
       run: pio lib -g install 1
     
     - name: Run PlatformIO
-      run: pio ci --lib="." --board=d1_mini
+      run: pio run
