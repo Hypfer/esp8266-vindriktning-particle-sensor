@@ -40,4 +40,4 @@ jobs:
         unzip /tmp/WiFiManager.zip -d /tmp/      
     
     - name: Run PlatformIO
-      run: pio run --lib="/tmp/WiFiManager"
+      run: pio run
