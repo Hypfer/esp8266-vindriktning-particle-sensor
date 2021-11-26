@@ -69,6 +69,11 @@ void setup() {
     WiFi.hostname(identifier);
 
     Config::load();
+
+    if (strlen(Config::mqtt_server) > 0 ) custom_mqtt_server.setValue(Config::mqtt_server, strlen(Config::mqtt_server));
+    if (strlen(Config::username) > 0 ) custom_mqtt_user.setValue(Config::username, strlen(Config::username));
+    if (strlen(Config::password) > 0 ) custom_mqtt_pass.setValue(Config::password, strlen(Config::password));
+    if (strlen(Config::mqtt_topic) > 0 ) custom_mqtt_topic.setValue(Config::mqtt_topic, strlen(Config::mqtt_topic));
   
     setupWifi();
     setupOTA();
@@ -164,6 +169,9 @@ void setupWifi() {
     wifiManager.addParameter(&custom_mqtt_user);
     wifiManager.addParameter(&custom_mqtt_pass);
     wifiManager.addParameter(&custom_mqtt_topic);
+
+    wifiManager.setSaveConfigCallback(saveConfigCallback);
+    wifiManager.setPreSaveConfigCallback(saveConfigCallback);
 
     WiFi.hostname(identifier);
     wifiManager.autoConnect(identifier);
