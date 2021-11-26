@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ArduinoJson.h>
-#include <FS.h>
+#include "LittleFS.h"
 
 #define JSON_SIZE 512
 
@@ -27,7 +27,7 @@ namespace Config {
         Serial.printf("mqtt_user: %s\n", username);
       
 
-        File configFile = SPIFFS.open("/conf.json", "w");
+        File configFile = LittleFS.open("/conf.json", "w");
         if (!configFile) {
             return;
         }
@@ -38,12 +38,9 @@ namespace Config {
 
     void load() {
         Serial.println("load config\n");
-        if (SPIFFS.begin()) {
-            if (SPIFFS.exists("/config.json")) {
-              SPIFFS.remove("/config.json");
-            }
-            if (SPIFFS.exists("/conf.json")) {
-                File configFile = SPIFFS.open("/conf.json", "r");
+        if (LittleFS.begin()) {
+            if (LittleFS.exists("/conf.json")) {
+                File configFile = LittleFS.open("/conf.json", "r");
 
                 if (configFile) {
                     const size_t size = configFile.size();
