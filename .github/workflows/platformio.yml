@@ -1,0 +1,49 @@
+name: PlatformIO CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Cache PlatformIO
+      uses: actions/cache@v2
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+
+    - name: Install library dependencies
+      run: |
+        wget https://github.com/tzapu/WiFiManager/archive/refs/tags/2.0.5-beta.zip -O /tmp/WiFiManager.zip
+        pio lib install /tmp/WiFiManager.zip
+        pio lib install 1
+   
+    - name: Run PlatformIO
+      run: pio run
+      env:
+        PLATFORMIO_CI_SRC: ${{ matrix.example }}
+    - name: Run Static Code Checks PlatformIO
+      run: pio check
+      env:
+        PLATFORMIO_CI_SRC: ${{ matrix.example }}

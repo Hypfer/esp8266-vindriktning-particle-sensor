@@ -21,6 +21,7 @@ PubSubClient mqttClient;
 WiFiManagerParameter custom_mqtt_server("server", "mqtt server", Config::mqtt_server, sizeof(Config::mqtt_server));
 WiFiManagerParameter custom_mqtt_user("user", "MQTT username", Config::username, sizeof(Config::username));
 WiFiManagerParameter custom_mqtt_pass("pass", "MQTT password", Config::password, sizeof(Config::password));
+WiFiManagerParameter custom_mqtt_topic("topic", "MQTT Topic", Config::mqtt_topic, sizeof(Config::mqtt_topic));
 
 uint32_t lastMqttConnectionAttempt = 0;
 const uint16_t mqttConnectionInterval = 60000; // 1 minute = 60 seconds = 60000 milliseconds
@@ -30,8 +31,8 @@ const uint16_t statusPublishInterval = 30000; // 30 seconds = 30000 milliseconds
 
 char identifier[24];
 #define FIRMWARE_PREFIX "esp8266-vindriktning-particle-sensor"
-#define AVAILABILITY_ONLINE "online"
-#define AVAILABILITY_OFFLINE "offline"
+#define AVAILABILITY_ONLINE "{ \"state\" : \"online\" }"
+#define AVAILABILITY_OFFLINE "{ \"state\" : \"offline\" }"
 char MQTT_TOPIC_AVAILABILITY[128];
 char MQTT_TOPIC_STATE[128];
 char MQTT_TOPIC_COMMAND[128];
@@ -61,9 +62,7 @@ void setup() {
 
     snprintf(identifier, sizeof(identifier), "VINDRIKTNING-%X", ESP.getChipId());
     snprintf(MQTT_TOPIC_AVAILABILITY, 127, "%s/%s/status", FIRMWARE_PREFIX, identifier);
-    snprintf(MQTT_TOPIC_STATE, 127, "%s/%s/state", FIRMWARE_PREFIX, identifier);
     snprintf(MQTT_TOPIC_COMMAND, 127, "%s/%s/command", FIRMWARE_PREFIX, identifier);
-
     snprintf(MQTT_TOPIC_AUTOCONF_PM25_SENSOR, 127, "homeassistant/sensor/%s/%s_pm25/config", FIRMWARE_PREFIX, identifier);
     snprintf(MQTT_TOPIC_AUTOCONF_WIFI_SENSOR, 127, "homeassistant/sensor/%s/%s_wifi/config", FIRMWARE_PREFIX, identifier);
 
@@ -71,8 +70,18 @@ void setup() {
 
     Config::load();
 
+    if (strlen(Config::mqtt_server) > 0 ) custom_mqtt_server.setValue(Config::mqtt_server, strlen(Config::mqtt_server));
+    if (strlen(Config::username) > 0 ) custom_mqtt_user.setValue(Config::username, strlen(Config::username));
+    if (strlen(Config::password) > 0 ) custom_mqtt_pass.setValue(Config::password, strlen(Config::password));
+    if (strlen(Config::mqtt_topic) > 0 ) custom_mqtt_topic.setValue(Config::mqtt_topic, strlen(Config::mqtt_topic));
+  
     setupWifi();
     setupOTA();
+
+    snprintf(MQTT_TOPIC_STATE, 127, Config::mqtt_topic, identifier);
+    Serial.printf("MQTT server: %s\n", Config::mqtt_server);
+    Serial.printf("MQTT Topic State: %s\n", MQTT_TOPIC_STATE);
+    
     mqttClient.setServer(Config::mqtt_server, 1883);
     mqttClient.setKeepAlive(10);
     mqttClient.setBufferSize(2048);
@@ -119,6 +128,21 @@ void loop() {
     ArduinoOTA.handle();
     SerialCom::handleUart(state);
     mqttClient.loop();
+    wifiManager.process();
+    if(shouldSaveConfig){
+      //save if needed
+      Serial.println("Get Values from web and save\n");
+      strcpy(Config::mqtt_server, custom_mqtt_server.getValue());
+      strcpy(Config::username, custom_mqtt_user.getValue());
+      strcpy(Config::password, custom_mqtt_pass.getValue());
+      strcpy(Config::mqtt_topic, custom_mqtt_topic.getValue());
+      Config::save();
+      snprintf(MQTT_TOPIC_STATE, 127, Config::mqtt_topic, identifier);
+      Serial.printf("MQTT Topic State: %s\n", MQTT_TOPIC_STATE);
+      //reset save flag
+      shouldSaveConfig = false;
+ 
+    }
 
     const uint32_t currentMillis = millis();
     if (currentMillis - statusPublishPreviousMillis >= statusPublishInterval) {
@@ -144,6 +168,10 @@ void setupWifi() {
     wifiManager.addParameter(&custom_mqtt_server);
     wifiManager.addParameter(&custom_mqtt_user);
     wifiManager.addParameter(&custom_mqtt_pass);
+    wifiManager.addParameter(&custom_mqtt_topic);
+
+    wifiManager.setSaveConfigCallback(saveConfigCallback);
+    wifiManager.setPreSaveConfigCallback(saveConfigCallback);
 
     WiFi.hostname(identifier);
     wifiManager.autoConnect(identifier);
@@ -152,15 +180,20 @@ void setupWifi() {
     strcpy(Config::mqtt_server, custom_mqtt_server.getValue());
     strcpy(Config::username, custom_mqtt_user.getValue());
     strcpy(Config::password, custom_mqtt_pass.getValue());
+    strcpy(Config::mqtt_topic, custom_mqtt_topic.getValue());
 
     if (shouldSaveConfig) {
         Config::save();
+        //reset save flag
+        shouldSaveConfig = false;
     } else {
         // For some reason, the read values get overwritten in this function
         // To combat this, we just reload the config
         // This is most likely a logic error which could be fixed otherwise
         Config::load();
     }
+    
+    wifiManager.startWebPortal();
 }
 
 void resetWifiSettingsAndReboot() {
@@ -171,8 +204,8 @@ void resetWifiSettingsAndReboot() {
 
 void mqttReconnect() {
     for (uint8_t attempt = 0; attempt < 3; ++attempt) {
-        if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_AVAILABILITY, 1, true, AVAILABILITY_OFFLINE)) {
-            mqttClient.publish(MQTT_TOPIC_AVAILABILITY, AVAILABILITY_ONLINE, true);
+        if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_STATE, 1, true, AVAILABILITY_OFFLINE)) {
+            mqttClient.publish(MQTT_TOPIC_STATE, AVAILABILITY_ONLINE, true);
             publishAutoConfig();
 
             // Make sure to subscribe after polling the status so that we never execute commands with the default data
