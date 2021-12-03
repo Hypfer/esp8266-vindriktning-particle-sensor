@@ -30,15 +30,15 @@ uint32_t statusPublishPreviousMillis = 0;
 const uint16_t statusPublishInterval = 30000; // 30 seconds = 30000 milliseconds
 
 char identifier[24];
-/**#define FIRMWARE_PREFIX "esp8266-vindriktning-particle-sensor"*/
+#define FIRMWARE_PREFIX "esp8266-vindriktning-particle-sensor"
 #define AVAILABILITY_ONLINE "{ \"state\" : \"online\" }"
 #define AVAILABILITY_OFFLINE "{ \"state\" : \"offline\" }"
-//char MQTT_TOPIC_AVAILABILITY[128];
+char MQTT_TOPIC_AVAILABILITY[128];
 char MQTT_TOPIC_STATE[128];
-//char MQTT_TOPIC_COMMAND[128];
+char MQTT_TOPIC_COMMAND[128];
 
-//char MQTT_TOPIC_AUTOCONF_WIFI_SENSOR[128];
-//char MQTT_TOPIC_AUTOCONF_PM25_SENSOR[128];
+char MQTT_TOPIC_AUTOCONF_WIFI_SENSOR[128];
+char MQTT_TOPIC_AUTOCONF_PM25_SENSOR[128];
 
 bool shouldSaveConfig = false;
 
@@ -61,10 +61,10 @@ void setup() {
     delay(3000);
 
     snprintf(identifier, sizeof(identifier), "VINDRIKTNING-%X", ESP.getChipId());
-    //snprintf(MQTT_TOPIC_AVAILABILITY, 127, "%s/%s/status", FIRMWARE_PREFIX, identifier);
-    //snprintf(MQTT_TOPIC_COMMAND, 127, "%s/%s/command", FIRMWARE_PREFIX, identifier);
-    //snprintf(MQTT_TOPIC_AUTOCONF_PM25_SENSOR, 127, "homeassistant/sensor/%s/%s_pm25/config", FIRMWARE_PREFIX, identifier);
-    //snprintf(MQTT_TOPIC_AUTOCONF_WIFI_SENSOR, 127, "homeassistant/sensor/%s/%s_wifi/config", FIRMWARE_PREFIX, identifier);
+    snprintf(MQTT_TOPIC_AVAILABILITY, 127, "%s/%s/status", FIRMWARE_PREFIX, identifier);
+    snprintf(MQTT_TOPIC_COMMAND, 127, "%s/%s/command", FIRMWARE_PREFIX, identifier);
+    snprintf(MQTT_TOPIC_AUTOCONF_PM25_SENSOR, 127, "homeassistant/sensor/%s/%s_pm25/config", FIRMWARE_PREFIX, identifier);
+    snprintf(MQTT_TOPIC_AUTOCONF_WIFI_SENSOR, 127, "homeassistant/sensor/%s/%s_wifi/config", FIRMWARE_PREFIX, identifier);
 
     WiFi.hostname(identifier);
 
@@ -206,10 +206,10 @@ void mqttReconnect() {
     for (uint8_t attempt = 0; attempt < 3; ++attempt) {
         if (mqttClient.connect(identifier, Config::username, Config::password, MQTT_TOPIC_STATE, 1, true, AVAILABILITY_OFFLINE)) {
             mqttClient.publish(MQTT_TOPIC_STATE, AVAILABILITY_ONLINE, true);
-            //publishAutoConfig();
+            publishAutoConfig();
 
             // Make sure to subscribe after polling the status so that we never execute commands with the default data
-            //mqttClient.subscribe(MQTT_TOPIC_COMMAND);
+            mqttClient.subscribe(MQTT_TOPIC_COMMAND);
             break;
         }
         delay(5000);
@@ -239,7 +239,7 @@ void publishState() {
 
 void mqttCallback(char* topic, uint8_t* payload, unsigned int length) { }
 
-/*void publishAutoConfig() {
+void publishAutoConfig() {
     char mqttPayload[2048];
     DynamicJsonDocument device(256);
     DynamicJsonDocument autoconfPayload(1024);
@@ -283,4 +283,4 @@ void mqttCallback(char* topic, uint8_t* payload, unsigned int length) { }
     mqttClient.publish(&MQTT_TOPIC_AUTOCONF_PM25_SENSOR[0], &mqttPayload[0], true);
 
     autoconfPayload.clear();
-}*/
+}
