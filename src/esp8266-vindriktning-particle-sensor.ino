@@ -16,7 +16,7 @@ uint8_t mqttRetryCounter = 0;
 
 WiFiManager wifiManager;
 WiFiClient wifiClient;
-PubSubClient mqttClient;
+PubSubClient mqttClient(wifiClient);
 
 WiFiManagerParameter custom_mqtt_server("server", "mqtt server", Config::mqtt_server, sizeof(Config::mqtt_server));
 WiFiManagerParameter custom_mqtt_user("user", "MQTT username", Config::username, sizeof(Config::username));
