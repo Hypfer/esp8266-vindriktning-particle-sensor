@@ -40,10 +40,10 @@ namespace SerialCom {
             float avgPM25 = 0.0f;
 
             for (uint8_t i = 0; i < 5; ++i) {
-                avgPM25 += state.measurements[i] / 5.0f;
+                avgPM25 += state.measurements[i];
             }
 
-            state.avgPM25 = avgPM25;
+            state.avgPM25 = avgPM25 / 5.0f;
             state.valid = true;
 
             Serial.printf("New Avg PM25: %d\n", state.avgPM25);
