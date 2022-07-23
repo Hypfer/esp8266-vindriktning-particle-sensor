@@ -61,6 +61,21 @@ Just build, flash, and you're done.
 
 When connecting everything up, you should see an open Wi-Fi Access Point to configure your Wi-Fi and MQTT credentials.
 
+## Alternative Software Using ESPHome
+
+ESPHome can be used to build firmware for the ESP device. A configuration example for it can be found below. The only thing to update will be the rx_pin to match your connection point.
+
+```
+uart:
+  rx_pin: D2
+  baud_rate: 9600
+
+sensor:
+  - platform: pm1006
+    pm_2_5:
+      name: "Particulate Matter <2.5µm"
+```
+
 ## Low-Noise Mod
 
 **Note:** The intent of this section is only to document that this is possible. I don't "recommend" doing this nor do I advise against it. 
