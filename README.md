@@ -63,7 +63,7 @@ When connecting everything up, you should see an open Wi-Fi Access Point to conf
 
 ## Alternative Software Using ESPHome
 
-ESPHome can be used to build firmware for the ESP device. A configuration example for it can be found below. The only thing to update will be the rx_pin to match your connection point.
+ESPHome can be used to build firmware for the ESP device ([added in this pull request](https://github.com/esphome/esphome/pull/2038)). A configuration example for it can be found below. The only thing to update will be the rx_pin to match your connection point.
 
 ```
 uart:
