@@ -86,8 +86,16 @@ namespace SerialCom {
             serialRxBuf[rxBufIdx++] = sensorSerial.read();
             Serial.print(".");
 
-            // Without this delay, receiving data breaks for reasons that are beyond me
-            delay(15);
+            // Without this delay, we might process the first byte too quickly
+            // and break before more data is available (we think the transmission
+            // is over prematurely).
+            //
+            // A more robust solution would be to feed the inputs into a state
+            // machine and then the inter-byte timings don't matter. But this
+            // solution is actually deployed and tested.
+            if (!sensorSerial.available()) {
+              delay(10);
+            }
 
             if (rxBufIdx >= 64) {
                 clearRxBuf();
